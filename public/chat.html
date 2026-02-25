@@ -11,7 +11,36 @@
     <a href="/" class="back-link" title="Leave and go back">← Back</a>
     <span class="room-badge" id="room-badge">Room</span>
     <span class="nick-badge" id="nick-badge">You</span>
+    <button type="button" class="settings-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙</button>
   </header>
+  <div class="settings-overlay" id="settings-overlay" aria-hidden="true">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button type="button" class="settings-close" id="settings-close" aria-label="Close">×</button>
+      </div>
+      <div class="settings-body">
+        <div class="setting-group">
+          <label>Font size</label>
+          <div class="setting-options" role="group" aria-label="Font size">
+            <button type="button" class="size-opt" data-size="small">Small</button>
+            <button type="button" class="size-opt active" data-size="medium">Medium</button>
+            <button type="button" class="size-opt" data-size="large">Large</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Background</label>
+          <div class="setting-options theme-options" role="group" aria-label="Background color">
+            <button type="button" class="theme-opt active" data-theme="default" title="Default dark">Default</button>
+            <button type="button" class="theme-opt" data-theme="warm" title="Warm dark">Warm</button>
+            <button type="button" class="theme-opt" data-theme="cool" title="Cool blue">Cool</button>
+            <button type="button" class="theme-opt" data-theme="soft" title="Soft gray">Soft</button>
+            <button type="button" class="theme-opt" data-theme="ocean" title="Ocean">Ocean</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="messages" id="messages"></div>
   <form class="send-form" id="send-form">
     <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" maxlength="2000">

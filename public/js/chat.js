@@ -10,6 +10,60 @@
   document.getElementById('room-badge').textContent = roomKey;
   document.getElementById('nick-badge').textContent = nickname;
 
+  const STORAGE_KEYS = { font: 'messageMaye_fontSize', theme: 'messageMaye_theme' };
+  const body = document.body;
+
+  function applySettings() {
+    const font = localStorage.getItem(STORAGE_KEYS.font) || 'medium';
+    const theme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
+    body.classList.remove('font-small', 'font-medium', 'font-large');
+    body.classList.add('font-' + font);
+    body.classList.remove('theme-warm', 'theme-cool', 'theme-soft', 'theme-ocean');
+    if (theme !== 'default') body.classList.add('theme-' + theme);
+    document.querySelectorAll('.size-opt').forEach((el) => {
+      el.classList.toggle('active', el.dataset.size === font);
+    });
+    document.querySelectorAll('.theme-opt').forEach((el) => {
+      el.classList.toggle('active', el.dataset.theme === theme);
+    });
+  }
+
+  applySettings();
+
+  const overlay = document.getElementById('settings-overlay');
+  const openBtn = document.getElementById('settings-btn');
+  const closeBtn = document.getElementById('settings-close');
+
+  function openSettings() {
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+  function closeSettings() {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
+  openBtn.addEventListener('click', openSettings);
+  closeBtn.addEventListener('click', closeSettings);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSettings();
+  });
+
+  document.querySelectorAll('.size-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const size = btn.dataset.size;
+      localStorage.setItem(STORAGE_KEYS.font, size);
+      applySettings();
+    });
+  });
+  document.querySelectorAll('.theme-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.theme;
+      localStorage.setItem(STORAGE_KEYS.theme, theme);
+      applySettings();
+    });
+  });
+
   const socket = io();
   const messagesEl = document.getElementById('messages');
   const form = document.getElementById('send-form');
