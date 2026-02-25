@@ -18,7 +18,8 @@
     const theme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
     body.classList.remove('font-small', 'font-medium', 'font-large');
     body.classList.add('font-' + font);
-    body.classList.remove('theme-warm', 'theme-cool', 'theme-soft', 'theme-ocean');
+    body.classList.remove('theme-warm', 'theme-cool', 'theme-soft', 'theme-ocean',
+      'theme-winter-night', 'theme-sunny-sky', 'theme-waterfront', 'theme-space-needle', 'theme-sunset-harbor');
     if (theme !== 'default') body.classList.add('theme-' + theme);
     document.querySelectorAll('.size-opt').forEach((el) => {
       el.classList.toggle('active', el.dataset.size === font);

@@ -145,6 +145,39 @@ body.lobby {
 .chat-page.font-medium { --chat-font-size: 1rem; }
 .chat-page.font-large { --chat-font-size: 1.125rem; }
 
+/* Image background themes – scaled to window (cover, center) */
+.chat-page.theme-winter-night,
+.chat-page.theme-sunny-sky,
+.chat-page.theme-waterfront,
+.chat-page.theme-space-needle,
+.chat-page.theme-sunset-harbor {
+  background-color: #0f0f12;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.chat-page.theme-winter-night { background-image: url('/images/themes/winter-night.png'); }
+.chat-page.theme-sunny-sky { background-image: url('/images/themes/sunny-sky.png'); }
+.chat-page.theme-waterfront { background-image: url('/images/themes/waterfront.png'); }
+.chat-page.theme-space-needle { background-image: url('/images/themes/space-needle.png'); }
+.chat-page.theme-sunset-harbor { background-image: url('/images/themes/sunset-harbor.png'); }
+
+/* Subtle overlay on image themes so text stays readable */
+.chat-page.theme-winter-night::before,
+.chat-page.theme-sunny-sky::before,
+.chat-page.theme-waterfront::before,
+.chat-page.theme-space-needle::before,
+.chat-page.theme-sunset-harbor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* Chat page */
 .chat-page {
   display: flex;
@@ -153,6 +186,13 @@ body.lobby {
   max-height: 100dvh;
   background: var(--chat-bg);
   color: var(--chat-text);
+}
+
+.chat-page .chat-header,
+.chat-page .messages,
+.chat-page .send-form {
+  position: relative;
+  z-index: 1;
 }
 
 .chat-header {
