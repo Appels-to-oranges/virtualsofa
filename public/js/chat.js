@@ -18,10 +18,11 @@
     const base = '/images/themes/' + theme;
     const gifUrl = base + '.gif';
     const pngUrl = base + '.png';
-    const img = new Image();
-    img.onload = function () { body.style.backgroundImage = 'url(' + gifUrl + ')'; };
+    var cacheBust = '?v=' + (window.__themeCacheBust || (window.__themeCacheBust = Date.now()));
+    body.style.backgroundImage = 'url(' + gifUrl + cacheBust + ')';
+    var img = new Image();
     img.onerror = function () { body.style.backgroundImage = 'url(' + pngUrl + ')'; };
-    img.src = gifUrl;
+    img.src = gifUrl + cacheBust;
   }
 
   function applySettings() {

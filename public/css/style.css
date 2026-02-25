@@ -160,7 +160,7 @@ body.lobby {
 
 /* Image URL set by JS (prefers .gif for looping, fallback .png) */
 
-/* Subtle overlay on image themes so text stays readable */
+/* Darkening overlay on image themes so text stays readable */
 .chat-page.theme-winter-night::before,
 .chat-page.theme-sunny-sky::before,
 .chat-page.theme-waterfront::before,
@@ -169,7 +169,7 @@ body.lobby {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0);
   pointer-events: none;
   z-index: 0;
 }
