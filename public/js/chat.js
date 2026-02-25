@@ -19,9 +19,10 @@
     const gifUrl = base + '.gif';
     const pngUrl = base + '.png';
     var cacheBust = '?v=' + (window.__themeCacheBust || (window.__themeCacheBust = Date.now()));
-    body.style.backgroundImage = 'url(' + gifUrl + cacheBust + ')';
+    var msgEl = document.getElementById('messages');
+    msgEl.style.backgroundImage = 'url(' + gifUrl + cacheBust + ')';
     var img = new Image();
-    img.onerror = function () { body.style.backgroundImage = 'url(' + pngUrl + ')'; };
+    img.onerror = function () { msgEl.style.backgroundImage = 'url(' + pngUrl + ')'; };
     img.src = gifUrl + cacheBust;
   }
 
@@ -33,10 +34,11 @@
     body.classList.remove('theme-warm', 'theme-cool', 'theme-soft', 'theme-ocean',
       'theme-winter-night', 'theme-sunny-sky', 'theme-waterfront', 'theme-space-needle', 'theme-sunset-harbor');
     if (theme !== 'default') body.classList.add('theme-' + theme);
+    var msgEl = document.getElementById('messages');
     if (IMAGE_THEMES.includes(theme)) {
       setImageThemeBg(theme);
     } else {
-      body.style.backgroundImage = '';
+      msgEl.style.backgroundImage = '';
     }
     document.querySelectorAll('.size-opt').forEach((el) => {
       el.classList.toggle('active', el.dataset.size === font);
