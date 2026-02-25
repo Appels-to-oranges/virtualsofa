@@ -286,6 +286,32 @@ body.lobby {
   opacity: 0.9;
 }
 
+.msg img.chat-photo {
+  max-width: 240px;
+  max-height: 300px;
+  border-radius: 8px;
+  display: block;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+.photo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.photo-overlay img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+}
+
 .send-form {
   flex-shrink: 0;
   display: flex;
@@ -304,7 +330,7 @@ body.lobby {
 
 .input-wrap input {
   width: 100%;
-  padding: 0.65rem 2.5rem 0.65rem 0.75rem;
+  padding: 0.65rem 4.5rem 0.65rem 0.75rem;
   border: 1px solid var(--chat-border);
   border-radius: 8px;
   background: var(--chat-input-bg);
@@ -317,9 +343,8 @@ body.lobby {
   border-color: var(--chat-accent);
 }
 
-.emoji-btn {
+.input-icon-btn {
   position: absolute;
-  right: 0.4rem;
   width: 1.75rem;
   height: 1.75rem;
   padding: 0;
@@ -333,10 +358,13 @@ body.lobby {
   justify-content: center;
 }
 
-.emoji-btn:hover {
+.input-icon-btn:hover {
   color: var(--chat-text);
   background: var(--chat-border);
 }
+
+#photo-btn { right: 2.25rem; }
+#emoji-btn { right: 0.4rem; }
 
 .emoji-picker {
   position: absolute;

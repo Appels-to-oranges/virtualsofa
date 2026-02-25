@@ -109,7 +109,24 @@
       sender.className = 'sender';
       sender.textContent = data.nickname;
       div.appendChild(sender);
-      div.appendChild(document.createTextNode(data.text));
+      if (data.src) {
+        var img = document.createElement('img');
+        img.className = 'chat-photo';
+        img.src = data.src;
+        img.alt = 'Photo from ' + data.nickname;
+        img.addEventListener('click', function () {
+          var overlay = document.createElement('div');
+          overlay.className = 'photo-overlay';
+          var full = document.createElement('img');
+          full.src = data.src;
+          overlay.appendChild(full);
+          overlay.addEventListener('click', function () { overlay.remove(); });
+          document.body.appendChild(overlay);
+        });
+        div.appendChild(img);
+      } else {
+        div.appendChild(document.createTextNode(data.text));
+      }
     }
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -131,6 +148,11 @@
     appendMessage(isOwn ? 'own' : 'other', data);
   });
 
+  socket.on('new-image', function (data) {
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', data);
+  });
+
   socket.on('background-changed', function (data) {
     applyTheme(data.theme);
     var isOwn = data.nickname === nickname;
@@ -142,6 +164,29 @@
     btn.addEventListener('click', function () {
       socket.emit('change-background', btn.dataset.theme);
     });
+  });
+
+  /* ---------- Photo upload ---------- */
+  var photoBtn = document.getElementById('photo-btn');
+  var photoInput = document.getElementById('photo-input');
+  var MAX_IMAGE_SIZE = 4 * 1024 * 1024;
+
+  photoBtn.addEventListener('click', function () { photoInput.click(); });
+
+  photoInput.addEventListener('change', function () {
+    var file = photoInput.files[0];
+    if (!file) return;
+    if (file.size > MAX_IMAGE_SIZE) {
+      appendMessage('system', { text: 'Image too large (max 4 MB)' });
+      photoInput.value = '';
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      socket.emit('send-image', reader.result);
+    };
+    reader.readAsDataURL(file);
+    photoInput.value = '';
   });
 
   /* ---------- Emoji picker ---------- */

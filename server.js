@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, { maxHttpBufferSize: 5e6 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -33,6 +33,16 @@ io.on('connection', (socket) => {
     if (!roomKey || !nickname) return;
     const payload = { nickname, text: String(text).trim(), time: new Date().toISOString() };
     io.to(roomKey).emit('new-message', payload);
+  });
+
+  socket.on('send-image', (dataUrl) => {
+    if (!socket.roomKey || !socket.nickname) return;
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return;
+    io.to(socket.roomKey).emit('new-image', {
+      nickname: socket.nickname,
+      src: dataUrl,
+      time: new Date().toISOString()
+    });
   });
 
   socket.on('change-background', (theme) => {
