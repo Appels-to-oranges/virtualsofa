@@ -63,7 +63,13 @@
   </div>
   <div class="messages" id="messages"></div>
   <form class="send-form" id="send-form">
-    <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" maxlength="2000">
+    <div class="input-wrap">
+      <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" maxlength="2000">
+      <button type="button" class="emoji-btn" id="emoji-btn" title="Emoji" aria-label="Emoji">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      </button>
+      <div class="emoji-picker" id="emoji-picker" aria-hidden="true"></div>
+    </div>
     <button type="submit">Send</button>
   </form>
   <script src="/socket.io/socket.io.js"></script>

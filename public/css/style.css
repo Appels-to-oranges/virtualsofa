@@ -293,9 +293,16 @@ body.lobby {
   border-top: 1px solid var(--chat-border);
 }
 
-.send-form input {
+.input-wrap {
   flex: 1;
-  padding: 0.65rem 0.75rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 0.65rem 2.5rem 0.65rem 0.75rem;
   border: 1px solid var(--chat-border);
   border-radius: 8px;
   background: var(--chat-input-bg);
@@ -303,12 +310,73 @@ body.lobby {
   font-size: var(--chat-font-size);
 }
 
-.send-form input:focus {
+.input-wrap input:focus {
   outline: none;
   border-color: var(--chat-accent);
 }
 
-.send-form button {
+.emoji-btn {
+  position: absolute;
+  right: 0.4rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #565f89;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-btn:hover {
+  color: var(--chat-text);
+  background: var(--chat-border);
+}
+
+.emoji-picker {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  width: 280px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #1a1b26;
+  border: 1px solid #3b4261;
+  border-radius: 10px;
+  padding: 0.5rem;
+  display: none;
+  flex-wrap: wrap;
+  gap: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 500;
+}
+
+.emoji-picker.open {
+  display: flex;
+}
+
+.emoji-picker button {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-picker button:hover {
+  background: #3b4261;
+}
+
+.send-form > button[type="submit"] {
   padding: 0.65rem 1rem;
   border: none;
   border-radius: 8px;
@@ -319,11 +387,11 @@ body.lobby {
   cursor: pointer;
 }
 
-.send-form button:hover {
+.send-form > button[type="submit"]:hover {
   filter: brightness(1.1);
 }
 
-.send-form button:disabled {
+.send-form > button[type="submit"]:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

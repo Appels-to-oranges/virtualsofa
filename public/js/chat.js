@@ -133,7 +133,8 @@
 
   socket.on('background-changed', function (data) {
     applyTheme(data.theme);
-    appendMessage('system', { text: data.nickname + ' changed the background' });
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', { nickname: data.nickname, text: 'changed the background' });
   });
 
   /* When a theme button in the backgrounds panel is clicked, broadcast to room */
@@ -143,11 +144,51 @@
     });
   });
 
+  /* ---------- Emoji picker ---------- */
+  var EMOJIS = [
+    '\u{1F600}','\u{1F602}','\u{1F605}','\u{1F606}','\u{1F609}','\u{1F60A}','\u{1F60D}','\u{1F618}',
+    '\u{1F61C}','\u{1F61D}','\u{1F60E}','\u{1F917}','\u{1F914}','\u{1F644}','\u{1F612}','\u{1F62D}',
+    '\u{1F621}','\u{1F631}','\u{1F4A9}','\u{1F44D}','\u{1F44E}','\u{1F44F}','\u{1F64C}','\u{1F64F}',
+    '\u{1F4AA}','\u{2764}\u{FE0F}','\u{1F494}','\u{1F525}','\u{2728}','\u{1F389}','\u{1F381}','\u{1F4AF}',
+    '\u{1F440}','\u{1F62E}','\u{1F615}','\u{1F634}','\u{1F637}','\u{1F913}','\u{1F60F}','\u{1F643}',
+    '\u{1F973}','\u{1F929}','\u{1F970}','\u{1F974}','\u{1F976}','\u{1F975}','\u{1F92F}','\u{1F47B}',
+    '\u{1F480}','\u{1F47D}','\u{1F916}','\u{1F63A}','\u{1F44B}','\u{270C}\u{FE0F}','\u{1F918}','\u{1F919}',
+    '\u{1F91E}','\u{1F91F}','\u{1F90C}','\u{1F91D}','\u{1F590}\u{FE0F}','\u{270A}','\u{1F4A5}','\u{1F4AB}'
+  ];
+  var emojiPicker = document.getElementById('emoji-picker');
+  var emojiBtn = document.getElementById('emoji-btn');
+
+  EMOJIS.forEach(function (em) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = em;
+    btn.addEventListener('click', function () {
+      input.value += em;
+      input.focus();
+    });
+    emojiPicker.appendChild(btn);
+  });
+
+  emojiBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    emojiPicker.classList.toggle('open');
+    emojiPicker.setAttribute('aria-hidden', emojiPicker.classList.contains('open') ? 'false' : 'true');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+      emojiPicker.classList.remove('open');
+      emojiPicker.setAttribute('aria-hidden', 'true');
+    }
+  });
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
     socket.emit('send-message', text);
     input.value = '';
+    emojiPicker.classList.remove('open');
+    emojiPicker.setAttribute('aria-hidden', 'true');
   });
 })();
