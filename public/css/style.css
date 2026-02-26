@@ -4,7 +4,7 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Cascadia Mono', 'Consolas', 'SF Mono', 'Courier New', monospace;
   background: linear-gradient(145deg, #1a1b26 0%, #24283b 100%);
   color: #c0caf5;
   min-height: 100vh;
@@ -55,6 +55,7 @@ body.lobby {
   background: #1a1b26;
   color: #c0caf5;
   font-size: 1rem;
+  font-family: inherit;
 }
 
 .join-form input:focus {
@@ -73,6 +74,7 @@ body.lobby {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .join-form button:hover {
@@ -141,9 +143,25 @@ body.lobby {
   --chat-system: #5b8fc4;
 }
 
-.chat-page.font-small { --chat-font-size: 0.875rem; }
-.chat-page.font-medium { --chat-font-size: 1rem; }
-.chat-page.font-large { --chat-font-size: 1.125rem; }
+/* Font rendering modes */
+.chat-page.render-smooth {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.chat-page.render-crisp {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: geometricPrecision;
+}
+
+.chat-page.render-pixel {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: optimizeSpeed;
+  font-smooth: never;
+}
 
 /* Image background themes – applied to messages area only */
 .chat-page.theme-winter-night .messages,
@@ -463,6 +481,7 @@ body.lobby {
   background: var(--chat-input-bg);
   color: var(--chat-text);
   font-size: var(--chat-font-size);
+  font-family: inherit;
 }
 
 .input-wrap input:focus {
@@ -542,6 +561,7 @@ body.lobby {
   font-size: var(--chat-font-size);
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .send-form > button[type="submit"]:hover {
@@ -651,6 +671,7 @@ body.lobby {
   color: #c0caf5;
   font-size: 0.9rem;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .size-opt:hover,
@@ -714,6 +735,38 @@ body.lobby {
   text-align: right;
 }
 
+.font-size-preview {
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: #24283b;
+  border-radius: 6px;
+  border: 1px solid #3b4261;
+  color: #a9b1d6;
+  word-break: break-word;
+}
+
+.render-opt {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #3b4261;
+  border-radius: 8px;
+  background: #24283b;
+  color: #c0caf5;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.render-opt:hover {
+  border-color: #7aa2f7;
+  background: #2d3250;
+}
+
+.render-opt.active {
+  border-color: #7aa2f7;
+  background: #7aa2f7;
+  color: #1a1b26;
+}
+
 /* Radio panel */
 .radio-panel {
   max-width: 380px;
@@ -733,6 +786,7 @@ body.lobby {
   background: #1a1b26;
   color: #c0caf5;
   font-size: 0.9rem;
+  font-family: inherit;
 }
 
 .radio-search-wrap input:focus {
@@ -750,6 +804,7 @@ body.lobby {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .radio-search-wrap button:hover {
@@ -894,6 +949,7 @@ body.lobby {
   background: #1a1b26;
   color: #c0caf5;
   font-size: 0.9rem;
+  font-family: inherit;
 }
 
 .yt-url-wrap input:focus {
@@ -911,6 +967,7 @@ body.lobby {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .yt-url-wrap button:hover {

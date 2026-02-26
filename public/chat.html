@@ -107,10 +107,19 @@
       <div class="settings-body">
         <div class="setting-group">
           <label>Font size</label>
-          <div class="setting-options" role="group" aria-label="Font size">
-            <button type="button" class="size-opt" data-size="small">Small</button>
-            <button type="button" class="size-opt active" data-size="medium">Medium</button>
-            <button type="button" class="size-opt" data-size="large">Large</button>
+          <div class="volume-wrap">
+            <input type="range" id="font-size-slider" min="10" max="28" value="16" step="1" class="volume-slider">
+            <span class="volume-value" id="font-size-value">16px</span>
+          </div>
+          <div class="font-size-preview" id="font-size-preview">The quick brown fox jumps over the lazy dog</div>
+        </div>
+        <div class="setting-group">
+          <label>Font rendering</label>
+          <div class="setting-options" role="group" aria-label="Font rendering">
+            <button type="button" class="render-opt active" data-render="auto">Auto</button>
+            <button type="button" class="render-opt" data-render="smooth">Smooth</button>
+            <button type="button" class="render-opt" data-render="crisp">Crisp</button>
+            <button type="button" class="render-opt" data-render="pixel">Pixel</button>
           </div>
         </div>
         <div class="setting-group">

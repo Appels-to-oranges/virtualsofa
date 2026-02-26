@@ -10,7 +10,7 @@
   document.getElementById('room-badge').textContent = roomKey;
   document.getElementById('nick-badge').textContent = nickname;
 
-  const STORAGE_KEYS = { font: 'messageMaye_fontSize', theme: 'messageMaye_theme', volume: 'messageMaye_volume', videoVolume: 'messageMaye_videoVolume' };
+  const STORAGE_KEYS = { font: 'messageMaye_fontSize', fontRender: 'messageMaye_fontRender', theme: 'messageMaye_theme', volume: 'messageMaye_volume', videoVolume: 'messageMaye_videoVolume' };
   const body = document.body;
   const IMAGE_THEMES = ['winter-night', 'sunny-sky', 'waterfront', 'space-needle', 'sunset-harbor', 'buildings', 'snow-apartments'];
 
@@ -43,13 +43,27 @@
   }
 
   function applySettings() {
-    const font = localStorage.getItem(STORAGE_KEYS.font) || 'medium';
-    const theme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
-    body.classList.remove('font-small', 'font-medium', 'font-large');
-    body.classList.add('font-' + font);
+    var fontSize = parseInt(localStorage.getItem(STORAGE_KEYS.font), 10);
+    if (isNaN(fontSize) || fontSize < 10 || fontSize > 28) fontSize = 16;
+    var fontRender = localStorage.getItem(STORAGE_KEYS.fontRender) || 'auto';
+    var theme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
+
+    body.style.setProperty('--chat-font-size', fontSize + 'px');
+
+    body.classList.remove('render-smooth', 'render-crisp', 'render-pixel');
+    if (fontRender !== 'auto') body.classList.add('render-' + fontRender);
+
     applyTheme(theme);
-    document.querySelectorAll('.size-opt').forEach(function (el) {
-      el.classList.toggle('active', el.dataset.size === font);
+
+    var slider = document.getElementById('font-size-slider');
+    var valueEl = document.getElementById('font-size-value');
+    var preview = document.getElementById('font-size-preview');
+    if (slider) slider.value = fontSize;
+    if (valueEl) valueEl.textContent = fontSize + 'px';
+    if (preview) preview.style.fontSize = fontSize + 'px';
+
+    document.querySelectorAll('.render-opt').forEach(function (el) {
+      el.classList.toggle('active', el.dataset.render === fontRender);
     });
   }
 
@@ -75,9 +89,21 @@
     if (e.target === settingsOverlay) closePanel(settingsOverlay);
   });
 
-  document.querySelectorAll('.size-opt').forEach(function (btn) {
+  var fontSizeSlider = document.getElementById('font-size-slider');
+  var fontSizeValue = document.getElementById('font-size-value');
+  var fontSizePreview = document.getElementById('font-size-preview');
+
+  fontSizeSlider.addEventListener('input', function () {
+    var v = parseInt(fontSizeSlider.value, 10);
+    fontSizeValue.textContent = v + 'px';
+    localStorage.setItem(STORAGE_KEYS.font, v);
+    body.style.setProperty('--chat-font-size', v + 'px');
+    if (fontSizePreview) fontSizePreview.style.fontSize = v + 'px';
+  });
+
+  document.querySelectorAll('.render-opt').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      localStorage.setItem(STORAGE_KEYS.font, btn.dataset.size);
+      localStorage.setItem(STORAGE_KEYS.fontRender, btn.dataset.render);
       applySettings();
     });
   });
