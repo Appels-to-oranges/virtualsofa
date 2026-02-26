@@ -119,12 +119,22 @@
   const form = document.getElementById('send-form');
   const input = document.getElementById('message-input');
 
+  function nickHue(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+    return ((h % 360) + 360) % 360;
+  }
+
   function appendMessage(type, data) {
     const div = document.createElement('div');
     div.className = 'msg ' + type;
     if (type === 'system') {
       div.textContent = data.text;
     } else {
+      if (type === 'other' && data.nickname) {
+        var hue = nickHue(data.nickname);
+        div.style.background = 'hsl(' + hue + ', 30%, 28%)';
+      }
       const sender = document.createElement('div');
       sender.className = 'sender';
       sender.textContent = data.nickname;
@@ -197,6 +207,21 @@
   var nowPlayingBar = document.getElementById('now-playing');
   var nowPlayingLabel = document.getElementById('now-playing-label');
 
+  var currentYtTitle = '';
+  var currentRadioName = '';
+
+  function updateNowPlaying() {
+    var parts = [];
+    if (!ytBgFrame.hidden) parts.push('\u{1F3AC} ' + (currentYtTitle || 'YouTube video'));
+    if (radioAudio.src) parts.push('\u{1F4FB} ' + (currentRadioName || 'Radio'));
+    if (parts.length) {
+      nowPlayingLabel.textContent = parts.join('  \u00B7  ');
+      nowPlayingBar.hidden = false;
+    } else {
+      nowPlayingBar.hidden = true;
+    }
+  }
+
   ytOpenBtn.addEventListener('click', function () { openPanel(ytOverlay); });
   ytCloseBtn.addEventListener('click', function () { closePanel(ytOverlay); });
   ytOverlay.addEventListener('click', function (e) {
@@ -208,28 +233,40 @@
     return m ? m[1] : null;
   }
 
+  function fetchYtTitle(videoId) {
+    fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=' + videoId + '&format=json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.title) {
+          currentYtTitle = d.title;
+          updateNowPlaying();
+        }
+      })
+      .catch(function () {});
+  }
+
   function showYouTube(videoId) {
     ytBgFrame.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&loop=1&playlist=' + videoId + '&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3';
     ytBgFrame.hidden = false;
     messagesWrap.classList.add('yt-active');
     messagesEl.style.backgroundImage = 'none';
-    nowPlayingLabel.textContent = '\u{1F3AC} YouTube video playing';
-    nowPlayingBar.hidden = false;
+    currentYtTitle = '';
+    updateNowPlaying();
+    fetchYtTitle(videoId);
   }
 
   function hideYouTube() {
     ytBgFrame.src = '';
     ytBgFrame.hidden = true;
     messagesWrap.classList.remove('yt-active');
+    currentYtTitle = '';
     var currentTheme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
     if (IMAGE_THEMES.includes(currentTheme)) {
       setImageThemeBg(currentTheme);
     } else {
       messagesEl.style.backgroundImage = '';
     }
-    if (!radioAudio.src) {
-      nowPlayingBar.hidden = true;
-    }
+    updateNowPlaying();
   }
 
   ytUrlSubmit.addEventListener('click', function () {
@@ -345,18 +382,15 @@
   function playRadio(station) {
     radioAudio.src = station.url;
     radioAudio.play().catch(function () {});
-    nowPlayingLabel.textContent = '\u{1F4FB} ' + station.name;
-    nowPlayingBar.hidden = false;
+    currentRadioName = station.name;
+    updateNowPlaying();
   }
 
   function stopRadio() {
     radioAudio.pause();
     radioAudio.src = '';
-    if (ytBgFrame.hidden) {
-      nowPlayingBar.hidden = true;
-    } else {
-      nowPlayingLabel.textContent = '\u{1F3AC} YouTube video playing';
-    }
+    currentRadioName = '';
+    updateNowPlaying();
   }
 
   radioStopBtn.addEventListener('click', function () {
@@ -380,6 +414,13 @@
       nickname: data.nickname,
       text: 'stopped the radio'
     });
+  });
+
+  /* ---------- Room state sync for new joiners ---------- */
+  socket.on('room-state', function (state) {
+    if (state.theme && state.theme !== 'default') applyTheme(state.theme);
+    if (state.radio) playRadio(state.radio);
+    if (state.youtube) showYouTube(state.youtube);
   });
 
   /* ---------- Photo upload ---------- */

@@ -17,6 +17,13 @@ app.get('/chat', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'chat.html'));
 });
 
+const roomState = {};
+
+function getRoom(key) {
+  if (!roomState[key]) roomState[key] = { radio: null, youtube: null, theme: null };
+  return roomState[key];
+}
+
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomKey, nickname }) => {
     const safeRoom = String(roomKey).trim().toLowerCase() || 'default';
@@ -24,6 +31,10 @@ io.on('connection', (socket) => {
     socket.roomKey = safeRoom;
     socket.nickname = safeNick;
     socket.join(safeRoom);
+
+    const state = getRoom(safeRoom);
+    socket.emit('room-state', state);
+
     io.to(safeRoom).emit('user-joined', { nickname: safeNick });
   });
 
@@ -48,14 +59,14 @@ io.on('connection', (socket) => {
   socket.on('change-radio', (station) => {
     if (!socket.roomKey || !socket.nickname) return;
     if (!station || typeof station.name !== 'string' || typeof station.url !== 'string') return;
-    io.to(socket.roomKey).emit('radio-changed', {
-      nickname: socket.nickname,
-      station: { name: station.name.slice(0, 200), url: station.url }
-    });
+    const s = { name: station.name.slice(0, 200), url: station.url };
+    getRoom(socket.roomKey).radio = s;
+    io.to(socket.roomKey).emit('radio-changed', { nickname: socket.nickname, station: s });
   });
 
   socket.on('stop-radio', () => {
     if (!socket.roomKey || !socket.nickname) return;
+    getRoom(socket.roomKey).radio = null;
     io.to(socket.roomKey).emit('radio-stopped', { nickname: socket.nickname });
   });
 
@@ -63,24 +74,21 @@ io.on('connection', (socket) => {
     if (!socket.roomKey || !socket.nickname) return;
     const safe = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20);
     if (!safe) return;
-    io.to(socket.roomKey).emit('youtube-changed', {
-      nickname: socket.nickname,
-      videoId: safe
-    });
+    getRoom(socket.roomKey).youtube = safe;
+    io.to(socket.roomKey).emit('youtube-changed', { nickname: socket.nickname, videoId: safe });
   });
 
   socket.on('stop-youtube', () => {
     if (!socket.roomKey || !socket.nickname) return;
+    getRoom(socket.roomKey).youtube = null;
     io.to(socket.roomKey).emit('youtube-stopped', { nickname: socket.nickname });
   });
 
   socket.on('change-background', (theme) => {
     if (!socket.roomKey || !socket.nickname) return;
     const safeTheme = String(theme).trim().toLowerCase();
-    io.to(socket.roomKey).emit('background-changed', {
-      nickname: socket.nickname,
-      theme: safeTheme
-    });
+    getRoom(socket.roomKey).theme = safeTheme;
+    io.to(socket.roomKey).emit('background-changed', { nickname: socket.nickname, theme: safeTheme });
   });
 
   socket.on('disconnect', () => {
