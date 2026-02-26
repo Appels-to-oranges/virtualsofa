@@ -147,6 +147,60 @@
     return ((h % 360) + 360) % 360;
   }
 
+  var REACTION_EMOJIS = ['\u{1F44D}','\u{2764}\u{FE0F}','\u{1F602}','\u{1F62E}','\u{1F622}','\u{1F525}','\u{1F44F}','\u{1F4AF}'];
+  var messageReactions = {};
+  var activeReactionPicker = null;
+  var userCountEl = document.getElementById('user-count');
+
+  function renderReactions(msgId) {
+    var div = document.querySelector('[data-msg-id="' + msgId + '"]');
+    if (!div) return;
+    var container = div.querySelector('.msg-reactions');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'msg-reactions';
+      div.appendChild(container);
+    }
+    container.innerHTML = '';
+    var reactions = messageReactions[msgId];
+    if (!reactions) { container.remove(); return; }
+    var emojis = Object.keys(reactions);
+    if (!emojis.length) { container.remove(); delete messageReactions[msgId]; return; }
+    emojis.forEach(function (emoji) {
+      var users = reactions[emoji];
+      var pill = document.createElement('button');
+      pill.className = 'reaction-pill';
+      pill.type = 'button';
+      if (users.indexOf(nickname) >= 0) pill.classList.add('reacted');
+      pill.textContent = emoji + ' ' + users.length;
+      pill.title = users.join(', ');
+      pill.addEventListener('click', function () {
+        socket.emit('toggle-reaction', { msgId: msgId, emoji: emoji });
+      });
+      container.appendChild(pill);
+    });
+  }
+
+  function showReactionPicker(msgDiv, msgId) {
+    if (activeReactionPicker) { activeReactionPicker.remove(); activeReactionPicker = null; }
+    var picker = document.createElement('div');
+    picker.className = 'reaction-picker';
+    REACTION_EMOJIS.forEach(function (em) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = em;
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        socket.emit('toggle-reaction', { msgId: msgId, emoji: em });
+        picker.remove();
+        activeReactionPicker = null;
+      });
+      picker.appendChild(btn);
+    });
+    msgDiv.appendChild(picker);
+    activeReactionPicker = picker;
+  }
+
   function appendMessage(type, data) {
     const div = document.createElement('div');
     div.className = 'msg ' + type;
@@ -179,12 +233,43 @@
       } else {
         div.appendChild(document.createTextNode(data.text));
       }
+      if (data.id) {
+        div.dataset.msgId = data.id;
+        var reactBtn = document.createElement('button');
+        reactBtn.className = 'react-btn';
+        reactBtn.type = 'button';
+        reactBtn.textContent = '+';
+        reactBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          showReactionPicker(div, data.id);
+        });
+        div.appendChild(reactBtn);
+      }
     }
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   socket.emit('join-room', { roomKey: roomKey.trim().toLowerCase(), nickname });
+
+  socket.on('user-count', function (count) {
+    userCountEl.textContent = count;
+  });
+
+  socket.on('reaction-toggled', function (data) {
+    var key = data.msgId;
+    if (!messageReactions[key]) messageReactions[key] = {};
+    if (!messageReactions[key][data.emoji]) messageReactions[key][data.emoji] = [];
+    var arr = messageReactions[key][data.emoji];
+    var idx = arr.indexOf(data.nickname);
+    if (idx >= 0) {
+      arr.splice(idx, 1);
+      if (!arr.length) delete messageReactions[key][data.emoji];
+    } else {
+      arr.push(data.nickname);
+    }
+    renderReactions(key);
+  });
 
   socket.on('user-joined', function (data) {
     const isOwn = data.nickname === nickname;
@@ -622,6 +707,10 @@
     if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
       emojiPicker.classList.remove('open');
       emojiPicker.setAttribute('aria-hidden', 'true');
+    }
+    if (activeReactionPicker && !activeReactionPicker.contains(e.target)) {
+      activeReactionPicker.remove();
+      activeReactionPicker = null;
     }
   });
 

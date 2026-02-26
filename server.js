@@ -18,6 +18,7 @@ app.get('/chat', (req, res) => {
 });
 
 const roomState = {};
+let msgIdCounter = 0;
 
 function getRoom(key) {
   if (!roomState[key]) roomState[key] = { radio: null, youtube: null, theme: null };
@@ -43,13 +44,15 @@ io.on('connection', (socket) => {
     socket.emit('room-state', { radio: state.radio, youtube: ytForClient, theme: state.theme });
 
     io.to(safeRoom).emit('user-joined', { nickname: safeNick });
+    const count = io.sockets.adapter.rooms.get(safeRoom)?.size || 0;
+    io.to(safeRoom).emit('user-count', count);
   });
 
   socket.on('send-message', (text) => {
     const roomKey = socket.roomKey;
     const nickname = socket.nickname;
     if (!roomKey || !nickname) return;
-    const payload = { nickname, text: String(text).trim(), time: new Date().toISOString() };
+    const payload = { id: ++msgIdCounter, nickname, text: String(text).trim(), time: new Date().toISOString() };
     io.to(roomKey).emit('new-message', payload);
   });
 
@@ -57,6 +60,7 @@ io.on('connection', (socket) => {
     if (!socket.roomKey || !socket.nickname) return;
     if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return;
     io.to(socket.roomKey).emit('new-image', {
+      id: ++msgIdCounter,
       nickname: socket.nickname,
       src: dataUrl,
       time: new Date().toISOString()
@@ -140,9 +144,21 @@ io.on('connection', (socket) => {
     io.to(socket.roomKey).emit('background-changed', { nickname: socket.nickname, theme: safeTheme });
   });
 
+  socket.on('toggle-reaction', (data) => {
+    if (!socket.roomKey || !socket.nickname) return;
+    if (!data || typeof data.msgId !== 'number' || typeof data.emoji !== 'string') return;
+    io.to(socket.roomKey).emit('reaction-toggled', {
+      msgId: data.msgId,
+      emoji: data.emoji.slice(0, 8),
+      nickname: socket.nickname
+    });
+  });
+
   socket.on('disconnect', () => {
     if (socket.nickname && socket.roomKey) {
       io.to(socket.roomKey).emit('user-left', { nickname: socket.nickname });
+      const count = io.sockets.adapter.rooms.get(socket.roomKey)?.size || 0;
+      io.to(socket.roomKey).emit('user-count', count);
     }
   });
 });

@@ -218,6 +218,14 @@ body.lobby {
   color: var(--chat-text);
 }
 
+.user-count {
+  font-size: 0.75rem;
+  color: #7aa2f7;
+  padding: 0.15rem 0.45rem;
+  background: rgba(122, 162, 247, 0.12);
+  border-radius: 8px;
+}
+
 .nick-badge {
   background: var(--chat-accent);
   color: #1a1b26;
@@ -298,6 +306,86 @@ body.lobby {
   border-radius: 10px;
   font-size: var(--chat-font-size);
   word-break: break-word;
+  position: relative;
+}
+
+.react-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(59, 66, 97, 0.85);
+  color: #c0caf5;
+  font-size: 13px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.msg:hover .react-btn {
+  display: flex;
+}
+
+.react-btn:hover {
+  background: #565f89;
+}
+
+.reaction-picker {
+  position: absolute;
+  top: -34px;
+  right: 0;
+  display: flex;
+  gap: 1px;
+  background: #1e2030;
+  border: 1px solid #3b4261;
+  border-radius: 8px;
+  padding: 3px;
+  z-index: 10;
+}
+
+.reaction-picker button {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.reaction-picker button:hover {
+  background: #3b4261;
+}
+
+.msg-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reaction-pill {
+  border: 1px solid #3b4261;
+  background: #1e2030;
+  color: #c0caf5;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.reaction-pill:hover {
+  background: #3b4261;
+}
+
+.reaction-pill.reacted {
+  border-color: #7aa2f7;
+  background: rgba(122, 162, 247, 0.15);
 }
 
 .msg.system {
