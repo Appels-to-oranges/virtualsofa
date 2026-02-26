@@ -186,6 +186,82 @@
     });
   });
 
+  /* ---------- YouTube panel ---------- */
+  var ytOverlay = document.getElementById('youtube-overlay');
+  var ytOpenBtn = document.getElementById('youtube-btn');
+  var ytCloseBtn = document.getElementById('youtube-close');
+  var ytUrlInput = document.getElementById('yt-url-input');
+  var ytUrlSubmit = document.getElementById('yt-url-submit');
+  var ytBgFrame = document.getElementById('yt-bg');
+  var messagesWrap = document.getElementById('messages-wrap');
+  var nowPlayingBar = document.getElementById('now-playing');
+  var nowPlayingLabel = document.getElementById('now-playing-label');
+
+  ytOpenBtn.addEventListener('click', function () { openPanel(ytOverlay); });
+  ytCloseBtn.addEventListener('click', function () { closePanel(ytOverlay); });
+  ytOverlay.addEventListener('click', function (e) {
+    if (e.target === ytOverlay) closePanel(ytOverlay);
+  });
+
+  function parseYouTubeId(url) {
+    var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function showYouTube(videoId) {
+    ytBgFrame.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&loop=1&playlist=' + videoId + '&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3';
+    ytBgFrame.hidden = false;
+    messagesWrap.classList.add('yt-active');
+    nowPlayingLabel.textContent = '\u{1F3AC} YouTube video playing';
+    nowPlayingBar.hidden = false;
+  }
+
+  function hideYouTube() {
+    ytBgFrame.src = '';
+    ytBgFrame.hidden = true;
+    messagesWrap.classList.remove('yt-active');
+    if (!radioAudio.src) {
+      nowPlayingBar.hidden = true;
+    }
+  }
+
+  ytUrlSubmit.addEventListener('click', function () {
+    var id = parseYouTubeId(ytUrlInput.value.trim());
+    if (!id) {
+      ytUrlInput.style.borderColor = '#f7768e';
+      return;
+    }
+    ytUrlInput.style.borderColor = '';
+    socket.emit('change-youtube', id);
+    ytUrlInput.value = '';
+    closePanel(ytOverlay);
+  });
+
+  ytUrlInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ytUrlSubmit.click();
+    }
+  });
+
+  socket.on('youtube-changed', function (data) {
+    showYouTube(data.videoId);
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', {
+      nickname: data.nickname,
+      text: 'set a YouTube video as the background'
+    });
+  });
+
+  socket.on('youtube-stopped', function (data) {
+    hideYouTube();
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', {
+      nickname: data.nickname,
+      text: 'stopped the YouTube background'
+    });
+  });
+
   /* ---------- Radio panel ---------- */
   var radioOverlay = document.getElementById('radio-overlay');
   var radioOpenBtn = document.getElementById('radio-btn');
@@ -193,8 +269,6 @@
   var radioSearchInput = document.getElementById('radio-search');
   var radioSearchBtn = document.getElementById('radio-search-btn');
   var radioResults = document.getElementById('radio-results');
-  var nowPlayingBar = document.getElementById('now-playing');
-  var nowPlayingLabel = document.getElementById('now-playing-label');
   var radioStopBtn = document.getElementById('radio-stop');
   var RADIO_API = 'https://de1.api.radio-browser.info/json/stations/search';
 
@@ -271,11 +345,16 @@
   function stopRadio() {
     radioAudio.pause();
     radioAudio.src = '';
-    nowPlayingBar.hidden = true;
+    if (ytBgFrame.hidden) {
+      nowPlayingBar.hidden = true;
+    } else {
+      nowPlayingLabel.textContent = '\u{1F3AC} YouTube video playing';
+    }
   }
 
   radioStopBtn.addEventListener('click', function () {
-    socket.emit('stop-radio');
+    if (radioAudio.src) socket.emit('stop-radio');
+    if (!ytBgFrame.hidden) socket.emit('stop-youtube');
   });
 
   socket.on('radio-changed', function (data) {

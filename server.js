@@ -59,6 +59,21 @@ io.on('connection', (socket) => {
     io.to(socket.roomKey).emit('radio-stopped', { nickname: socket.nickname });
   });
 
+  socket.on('change-youtube', (videoId) => {
+    if (!socket.roomKey || !socket.nickname) return;
+    const safe = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20);
+    if (!safe) return;
+    io.to(socket.roomKey).emit('youtube-changed', {
+      nickname: socket.nickname,
+      videoId: safe
+    });
+  });
+
+  socket.on('stop-youtube', () => {
+    if (!socket.roomKey || !socket.nickname) return;
+    io.to(socket.roomKey).emit('youtube-stopped', { nickname: socket.nickname });
+  });
+
   socket.on('change-background', (theme) => {
     if (!socket.roomKey || !socket.nickname) return;
     const safeTheme = String(theme).trim().toLowerCase();
