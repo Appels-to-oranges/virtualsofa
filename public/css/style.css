@@ -252,17 +252,22 @@ body.lobby {
 
 .yt-bg {
   position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.yt-bg iframe {
+  position: absolute;
   top: 50%;
   left: 50%;
   min-width: 100%;
   min-height: 100%;
-  width: auto;
-  height: auto;
+  width: 177.78vh;
+  height: 56.25vw;
   transform: translate(-50%, -50%);
   border: none;
-  z-index: 0;
-  pointer-events: none;
-  aspect-ratio: 16 / 9;
 }
 
 .messages {
@@ -277,7 +282,7 @@ body.lobby {
 }
 
 .messages-wrap.yt-active .messages {
-  background: rgba(0, 0, 0, 0.55) !important;
+  background: transparent !important;
   background-image: none !important;
 }
 
@@ -752,6 +757,25 @@ body.lobby {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.now-playing-ctrl {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #c0caf5;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.now-playing-ctrl:hover {
+  background: #3b4261;
 }
 
 .now-playing-stop:hover {

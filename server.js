@@ -33,7 +33,14 @@ io.on('connection', (socket) => {
     socket.join(safeRoom);
 
     const state = getRoom(safeRoom);
-    socket.emit('room-state', state);
+    const ytForClient = state.youtube ? {
+      videoId: state.youtube.videoId,
+      position: state.youtube.paused
+        ? state.youtube.pausedElapsed
+        : (Date.now() - state.youtube.startedAt) / 1000,
+      paused: state.youtube.paused
+    } : null;
+    socket.emit('room-state', { radio: state.radio, youtube: ytForClient, theme: state.theme });
 
     io.to(safeRoom).emit('user-joined', { nickname: safeNick });
   });
@@ -74,7 +81,12 @@ io.on('connection', (socket) => {
     if (!socket.roomKey || !socket.nickname) return;
     const safe = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20);
     if (!safe) return;
-    getRoom(socket.roomKey).youtube = safe;
+    getRoom(socket.roomKey).youtube = {
+      videoId: safe,
+      startedAt: Date.now(),
+      pausedElapsed: null,
+      paused: false
+    };
     io.to(socket.roomKey).emit('youtube-changed', { nickname: socket.nickname, videoId: safe });
   });
 
@@ -82,6 +94,41 @@ io.on('connection', (socket) => {
     if (!socket.roomKey || !socket.nickname) return;
     getRoom(socket.roomKey).youtube = null;
     io.to(socket.roomKey).emit('youtube-stopped', { nickname: socket.nickname });
+  });
+
+  socket.on('pause-youtube', () => {
+    if (!socket.roomKey || !socket.nickname) return;
+    const room = getRoom(socket.roomKey);
+    if (!room.youtube || room.youtube.paused) return;
+    room.youtube.pausedElapsed = (Date.now() - room.youtube.startedAt) / 1000;
+    room.youtube.paused = true;
+    io.to(socket.roomKey).emit('youtube-paused', { nickname: socket.nickname });
+  });
+
+  socket.on('resume-youtube', () => {
+    if (!socket.roomKey || !socket.nickname) return;
+    const room = getRoom(socket.roomKey);
+    if (!room.youtube || !room.youtube.paused) return;
+    room.youtube.startedAt = Date.now() - (room.youtube.pausedElapsed * 1000);
+    room.youtube.paused = false;
+    room.youtube.pausedElapsed = null;
+    io.to(socket.roomKey).emit('youtube-resumed', { nickname: socket.nickname });
+  });
+
+  socket.on('seek-youtube', (seconds) => {
+    if (!socket.roomKey || !socket.nickname) return;
+    const room = getRoom(socket.roomKey);
+    if (!room.youtube) return;
+    const secs = Math.abs(Number(seconds)) || 10;
+    if (room.youtube.paused) {
+      room.youtube.pausedElapsed = Math.max(0, room.youtube.pausedElapsed + secs);
+    } else {
+      room.youtube.startedAt -= secs * 1000;
+    }
+    const pos = room.youtube.paused
+      ? room.youtube.pausedElapsed
+      : (Date.now() - room.youtube.startedAt) / 1000;
+    io.to(socket.roomKey).emit('youtube-seeked', { nickname: socket.nickname, position: pos });
   });
 
   socket.on('change-background', (theme) => {

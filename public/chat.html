@@ -57,9 +57,15 @@
     </div>
   </div>
 
-  <div class="now-playing" id="now-playing" hidden>
-    <span class="now-playing-label" id="now-playing-label"></span>
-    <button type="button" class="now-playing-stop" id="radio-stop" title="Stop radio" aria-label="Stop radio">&#x25A0;</button>
+  <div class="now-playing" id="now-playing-yt" hidden>
+    <span class="now-playing-label" id="now-playing-yt-label"></span>
+    <button type="button" class="now-playing-ctrl" id="yt-pause-btn" title="Pause/Play">&#x23F8;</button>
+    <button type="button" class="now-playing-ctrl" id="yt-fwd-btn" title="Skip +10s">&#x23E9;</button>
+    <button type="button" class="now-playing-stop" id="yt-stop-btn" title="Stop video">&#x25A0;</button>
+  </div>
+  <div class="now-playing" id="now-playing-radio" hidden>
+    <span class="now-playing-label" id="now-playing-radio-label"></span>
+    <button type="button" class="now-playing-stop" id="radio-stop" title="Stop radio">&#x25A0;</button>
   </div>
 
   <div class="settings-overlay" id="backgrounds-overlay" aria-hidden="true">
@@ -115,7 +121,7 @@
     </div>
   </div>
   <div class="messages-wrap" id="messages-wrap">
-    <iframe class="yt-bg" id="yt-bg" hidden allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    <div class="yt-bg" id="yt-bg-container" hidden><div id="yt-player"></div></div>
     <div class="messages" id="messages"></div>
   </div>
   <form class="send-form" id="send-form">
@@ -132,6 +138,7 @@
     </div>
     <button type="submit">Send</button>
   </form>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/chat.js"></script>

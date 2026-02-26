@@ -202,23 +202,47 @@
   var ytCloseBtn = document.getElementById('youtube-close');
   var ytUrlInput = document.getElementById('yt-url-input');
   var ytUrlSubmit = document.getElementById('yt-url-submit');
-  var ytBgFrame = document.getElementById('yt-bg');
+  var ytBgContainer = document.getElementById('yt-bg-container');
   var messagesWrap = document.getElementById('messages-wrap');
-  var nowPlayingBar = document.getElementById('now-playing');
-  var nowPlayingLabel = document.getElementById('now-playing-label');
 
+  var ytPlayer = null;
+  var ytApiReady = false;
+  var ytPaused = false;
+  var ytShouldPauseOnPlay = false;
+  var ytPendingAction = null;
+  var currentVideoId = '';
   var currentYtTitle = '';
   var currentRadioName = '';
 
-  function updateNowPlaying() {
-    var parts = [];
-    if (!ytBgFrame.hidden) parts.push('\u{1F3AC} ' + (currentYtTitle || 'YouTube video'));
-    if (radioAudio.src) parts.push('\u{1F4FB} ' + (currentRadioName || 'Radio'));
-    if (parts.length) {
-      nowPlayingLabel.textContent = parts.join('  \u00B7  ');
-      nowPlayingBar.hidden = false;
+  var npYtBar = document.getElementById('now-playing-yt');
+  var npYtLabel = document.getElementById('now-playing-yt-label');
+  var ytPauseBtn = document.getElementById('yt-pause-btn');
+  var ytFwdBtn = document.getElementById('yt-fwd-btn');
+  var ytStopBtn = document.getElementById('yt-stop-btn');
+  var npRadioBar = document.getElementById('now-playing-radio');
+  var npRadioLabel = document.getElementById('now-playing-radio-label');
+
+  window.onYouTubeIframeAPIReady = function () {
+    ytApiReady = true;
+    if (ytPendingAction) { ytPendingAction(); ytPendingAction = null; }
+  };
+
+  function updateNowPlayingYt() {
+    if (currentVideoId) {
+      npYtLabel.textContent = '\u{1F3AC} ' + (currentYtTitle || 'YouTube video');
+      ytPauseBtn.textContent = ytPaused ? '\u25B6' : '\u23F8';
+      npYtBar.hidden = false;
     } else {
-      nowPlayingBar.hidden = true;
+      npYtBar.hidden = true;
+    }
+  }
+
+  function updateNowPlayingRadio() {
+    if (currentRadioName) {
+      npRadioLabel.textContent = '\u{1F4FB} ' + currentRadioName;
+      npRadioBar.hidden = false;
+    } else {
+      npRadioBar.hidden = true;
     }
   }
 
@@ -239,34 +263,73 @@
       .then(function (d) {
         if (d.title) {
           currentYtTitle = d.title;
-          updateNowPlaying();
+          updateNowPlayingYt();
         }
       })
       .catch(function () {});
   }
 
-  function showYouTube(videoId) {
-    ytBgFrame.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&loop=1&playlist=' + videoId + '&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3';
-    ytBgFrame.hidden = false;
+  function showYouTube(videoId, startSeconds, paused) {
+    currentVideoId = videoId;
+    ytBgContainer.hidden = false;
     messagesWrap.classList.add('yt-active');
     messagesEl.style.backgroundImage = 'none';
+    ytPaused = !!paused;
     currentYtTitle = '';
-    updateNowPlaying();
+
+    var doIt = function () {
+      if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+        ytPlayer.loadVideoById({ videoId: videoId, startSeconds: startSeconds || 0 });
+        if (paused) ytShouldPauseOnPlay = true;
+      } else {
+        ytShouldPauseOnPlay = !!paused;
+        ytPlayer = new YT.Player('yt-player', {
+          width: '100%',
+          height: '100%',
+          videoId: videoId,
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            loop: 1,
+            playlist: videoId,
+            controls: 0,
+            showinfo: 0,
+            modestbranding: 1,
+            rel: 0,
+            iv_load_policy: 3,
+            start: Math.floor(startSeconds || 0)
+          },
+          events: {
+            onStateChange: function (e) {
+              if (ytShouldPauseOnPlay && e.data === YT.PlayerState.PLAYING) {
+                ytShouldPauseOnPlay = false;
+                e.target.pauseVideo();
+              }
+            }
+          }
+        });
+      }
+    };
+
+    if (ytApiReady) { doIt(); } else { ytPendingAction = doIt; }
+    updateNowPlayingYt();
     fetchYtTitle(videoId);
   }
 
   function hideYouTube() {
-    ytBgFrame.src = '';
-    ytBgFrame.hidden = true;
+    if (ytPlayer && typeof ytPlayer.stopVideo === 'function') ytPlayer.stopVideo();
+    ytBgContainer.hidden = true;
     messagesWrap.classList.remove('yt-active');
+    currentVideoId = '';
     currentYtTitle = '';
+    ytPaused = false;
     var currentTheme = localStorage.getItem(STORAGE_KEYS.theme) || 'default';
     if (IMAGE_THEMES.includes(currentTheme)) {
       setImageThemeBg(currentTheme);
     } else {
       messagesEl.style.backgroundImage = '';
     }
-    updateNowPlaying();
+    updateNowPlayingYt();
   }
 
   ytUrlSubmit.addEventListener('click', function () {
@@ -289,7 +352,7 @@
   });
 
   socket.on('youtube-changed', function (data) {
-    showYouTube(data.videoId);
+    showYouTube(data.videoId, 0, false);
     var isOwn = data.nickname === nickname;
     appendMessage(isOwn ? 'own' : 'other', {
       nickname: data.nickname,
@@ -304,6 +367,42 @@
       nickname: data.nickname,
       text: 'stopped the YouTube background'
     });
+  });
+
+  socket.on('youtube-paused', function (data) {
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+    ytPaused = true;
+    updateNowPlayingYt();
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', { nickname: data.nickname, text: 'paused the video' });
+  });
+
+  socket.on('youtube-resumed', function (data) {
+    if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
+    ytPaused = false;
+    updateNowPlayingYt();
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', { nickname: data.nickname, text: 'resumed the video' });
+  });
+
+  socket.on('youtube-seeked', function (data) {
+    if (ytPlayer && typeof ytPlayer.seekTo === 'function') ytPlayer.seekTo(data.position, true);
+    var isOwn = data.nickname === nickname;
+    appendMessage(isOwn ? 'own' : 'other', { nickname: data.nickname, text: 'skipped forward in the video' });
+  });
+
+  ytPauseBtn.addEventListener('click', function () {
+    if (!currentVideoId) return;
+    socket.emit(ytPaused ? 'resume-youtube' : 'pause-youtube');
+  });
+
+  ytFwdBtn.addEventListener('click', function () {
+    if (!currentVideoId) return;
+    socket.emit('seek-youtube', 10);
+  });
+
+  ytStopBtn.addEventListener('click', function () {
+    if (currentVideoId) socket.emit('stop-youtube');
   });
 
   /* ---------- Radio panel ---------- */
@@ -383,19 +482,18 @@
     radioAudio.src = station.url;
     radioAudio.play().catch(function () {});
     currentRadioName = station.name;
-    updateNowPlaying();
+    updateNowPlayingRadio();
   }
 
   function stopRadio() {
     radioAudio.pause();
     radioAudio.src = '';
     currentRadioName = '';
-    updateNowPlaying();
+    updateNowPlayingRadio();
   }
 
   radioStopBtn.addEventListener('click', function () {
-    if (radioAudio.src) socket.emit('stop-radio');
-    if (!ytBgFrame.hidden) socket.emit('stop-youtube');
+    if (currentRadioName) socket.emit('stop-radio');
   });
 
   socket.on('radio-changed', function (data) {
@@ -420,7 +518,7 @@
   socket.on('room-state', function (state) {
     if (state.theme && state.theme !== 'default') applyTheme(state.theme);
     if (state.radio) playRadio(state.radio);
-    if (state.youtube) showYouTube(state.youtube);
+    if (state.youtube) showYouTube(state.youtube.videoId, state.youtube.position, state.youtube.paused);
   });
 
   /* ---------- Photo upload ---------- */
