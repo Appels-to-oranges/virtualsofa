@@ -556,13 +556,16 @@
       .then(function (r) { return r.json(); })
       .then(function (stations) {
         radioResults.innerHTML = '';
-        if (!stations.length) {
+        var secure = stations.filter(function (st) {
+          var u = st.url_resolved || st.url;
+          return u && u.startsWith('https');
+        });
+        if (!secure.length) {
           radioResults.innerHTML = '<div class="radio-empty">No stations found</div>';
           return;
         }
-        stations.forEach(function (st) {
+        secure.forEach(function (st) {
           var url = st.url_resolved || st.url;
-          if (!url) return;
           var row = document.createElement('div');
           row.className = 'radio-station';
           var icon = document.createElement('img');
