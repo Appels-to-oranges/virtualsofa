@@ -160,6 +160,71 @@ body.lobby > * {
   --chat-system: #5b8fc4;
 }
 
+/* Waterfront — warm amber/gold from city lights on water */
+.chat-page.theme-waterfront {
+  --chat-bg: linear-gradient(145deg, #161008 0%, #1e1810 100%);
+  --chat-header-bg: rgba(22, 16, 8, 0.92);
+  --chat-border: #4a3c2a;
+  --chat-input-bg: #161008;
+  --chat-text: #e0d4c0;
+  --chat-accent: #d4a55c;
+  --chat-msg-other-bg: #352a1e;
+  --chat-msg-own-bg: #c49050;
+  --chat-system: #8a7458;
+}
+
+/* Buildings — cool steel blue-grey, overcast urban */
+.chat-page.theme-buildings {
+  --chat-bg: linear-gradient(145deg, #12141c 0%, #1a1e2a 100%);
+  --chat-header-bg: rgba(18, 20, 28, 0.92);
+  --chat-border: #3e4258;
+  --chat-input-bg: #12141c;
+  --chat-text: #c8ccd6;
+  --chat-accent: #7a8a9e;
+  --chat-msg-other-bg: #2c3040;
+  --chat-msg-own-bg: #6e7e94;
+  --chat-system: #606878;
+}
+
+/* Apartments — warm amber window glow on snowy night */
+.chat-page.theme-apartments {
+  --chat-bg: linear-gradient(145deg, #14100c 0%, #1e1610 100%);
+  --chat-header-bg: rgba(20, 16, 12, 0.92);
+  --chat-border: #4a3824;
+  --chat-input-bg: #14100c;
+  --chat-text: #dcd0c0;
+  --chat-accent: #d4a060;
+  --chat-msg-other-bg: #302418;
+  --chat-msg-own-bg: #c49055;
+  --chat-system: #887050;
+}
+
+/* Fireflies — deep forest green */
+.chat-page.theme-fireflies {
+  --chat-bg: linear-gradient(145deg, #0a100e 0%, #101c18 100%);
+  --chat-header-bg: rgba(8, 16, 14, 0.92);
+  --chat-border: #2a4a3e;
+  --chat-input-bg: #0a100e;
+  --chat-text: #b8d4c6;
+  --chat-accent: #5ca882;
+  --chat-msg-other-bg: #1a2e28;
+  --chat-msg-own-bg: #4a9470;
+  --chat-system: #4a7a66;
+}
+
+/* Snowy Lot — cool blue-purple night sky */
+.chat-page.theme-snowy-lot {
+  --chat-bg: linear-gradient(145deg, #100e16 0%, #181624 100%);
+  --chat-header-bg: rgba(16, 14, 22, 0.92);
+  --chat-border: #3a3848;
+  --chat-input-bg: #100e16;
+  --chat-text: #cccad8;
+  --chat-accent: #8a92b8;
+  --chat-msg-other-bg: #282430;
+  --chat-msg-own-bg: #7a82a8;
+  --chat-system: #606078;
+}
+
 /* Image background themes – applied to messages area only */
 .chat-page.theme-waterfront .messages,
 .chat-page.theme-buildings .messages,
@@ -231,9 +296,9 @@ body.lobby > * {
 
 .user-count {
   font-size: 0.75rem;
-  color: #7aa2f7;
+  color: var(--chat-accent);
   padding: 0.15rem 0.45rem;
-  background: rgba(122, 162, 247, 0.12);
+  background: color-mix(in srgb, var(--chat-accent) 12%, transparent);
   border-radius: 8px;
 }
 
@@ -242,10 +307,10 @@ body.lobby > * {
   align-items: center;
   gap: 0.3rem;
   padding: 0.2rem 0.55rem;
-  border: 1px solid rgba(122, 162, 247, 0.3);
+  border: 1px solid color-mix(in srgb, var(--chat-accent) 30%, transparent);
   border-radius: 6px;
-  background: rgba(122, 162, 247, 0.1);
-  color: #7aa2f7;
+  background: color-mix(in srgb, var(--chat-accent) 10%, transparent);
+  color: var(--chat-accent);
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
@@ -254,8 +319,8 @@ body.lobby > * {
 }
 
 .invite-btn:hover {
-  background: rgba(122, 162, 247, 0.2);
-  border-color: #7aa2f7;
+  background: color-mix(in srgb, var(--chat-accent) 20%, transparent);
+  border-color: var(--chat-accent);
 }
 
 .invite-btn svg {
@@ -443,8 +508,8 @@ body.lobby > * {
 }
 
 .reaction-pill.reacted {
-  border-color: #7aa2f7;
-  background: rgba(122, 162, 247, 0.15);
+  border-color: var(--chat-accent);
+  background: color-mix(in srgb, var(--chat-accent) 15%, transparent);
 }
 
 .msg.system {
@@ -717,14 +782,14 @@ body.lobby > * {
 
 .size-opt:hover,
 .theme-opt:hover {
-  border-color: #7aa2f7;
+  border-color: var(--chat-accent);
   background: #2d3250;
 }
 
 .size-opt.active,
 .theme-opt.active {
-  border-color: #7aa2f7;
-  background: #7aa2f7;
+  border-color: var(--chat-accent);
+  background: var(--chat-accent);
   color: #1a1b26;
 }
 
@@ -755,7 +820,7 @@ body.lobby > * {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #7aa2f7;
+  background: var(--chat-accent);
   cursor: pointer;
   border: none;
 }
@@ -764,7 +829,7 @@ body.lobby > * {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #7aa2f7;
+  background: var(--chat-accent);
   cursor: pointer;
   border: none;
 }
@@ -810,14 +875,14 @@ body.lobby > * {
 
 .radio-search-wrap input:focus {
   outline: none;
-  border-color: #7aa2f7;
+  border-color: var(--chat-accent);
 }
 
 .radio-search-wrap button {
   padding: 0.55rem 0.85rem;
   border: none;
   border-radius: 8px;
-  background: #7aa2f7;
+  background: var(--chat-accent);
   color: #1a1b26;
   font-size: 0.9rem;
   font-weight: 600;
@@ -858,7 +923,7 @@ body.lobby > * {
 }
 
 .radio-station:hover {
-  border-color: #7aa2f7;
+  border-color: var(--chat-accent);
   background: #2d3250;
 }
 
@@ -973,7 +1038,7 @@ body.lobby > * {
 
 .yt-url-wrap input:focus {
   outline: none;
-  border-color: #7aa2f7;
+  border-color: var(--chat-accent);
 }
 
 .yt-url-wrap button {
