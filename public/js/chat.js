@@ -30,7 +30,7 @@
   }
 
   function applyTheme(theme) {
-    body.classList.remove('theme-warm', 'theme-cool', 'theme-soft', 'theme-ocean',
+    body.classList.remove('theme-amber', 'theme-slate', 'theme-gray', 'theme-blue',
       'theme-waterfront', 'theme-buildings', 'theme-apartments', 'theme-fireflies', 'theme-snowy-lot');
     if (theme !== 'default') body.classList.add('theme-' + theme);
     var msgEl = document.getElementById('messages');
