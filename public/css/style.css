@@ -164,13 +164,12 @@ body.lobby {
 }
 
 /* Image background themes – applied to messages area only */
-.chat-page.theme-winter-night .messages,
-.chat-page.theme-sunny-sky .messages,
 .chat-page.theme-waterfront .messages,
-.chat-page.theme-space-needle .messages,
-.chat-page.theme-sunset-harbor .messages,
 .chat-page.theme-buildings .messages,
-.chat-page.theme-snow-apartments .messages {
+.chat-page.theme-apartments .messages,
+.chat-page.theme-fireflies .messages,
+.chat-page.theme-foggy-hills .messages,
+.chat-page.theme-snowy-lot .messages {
   background-color: #0f0f12;
   background-size: cover;
   background-position: center;
@@ -179,13 +178,12 @@ body.lobby {
 }
 
 /* Darkening overlay on image themes so text stays readable */
-.chat-page.theme-winter-night .messages::before,
-.chat-page.theme-sunny-sky .messages::before,
 .chat-page.theme-waterfront .messages::before,
-.chat-page.theme-space-needle .messages::before,
-.chat-page.theme-sunset-harbor .messages::before,
 .chat-page.theme-buildings .messages::before,
-.chat-page.theme-snow-apartments .messages::before {
+.chat-page.theme-apartments .messages::before,
+.chat-page.theme-fireflies .messages::before,
+.chat-page.theme-foggy-hills .messages::before,
+.chat-page.theme-snowy-lot .messages::before {
   content: '';
   position: absolute;
   inset: 0;
