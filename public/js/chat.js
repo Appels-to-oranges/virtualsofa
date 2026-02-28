@@ -479,7 +479,7 @@
   function showYouTube(videoId, startSeconds, paused) {
     currentVideoId = videoId;
     ytBgContainer.hidden = false;
-    messagesWrap.classList.add('yt-active');
+    body.classList.add('yt-theater');
     messagesEl.style.backgroundImage = 'none';
     ytPaused = !!paused;
     currentYtTitle = '';
@@ -530,7 +530,7 @@
   function hideYouTube() {
     if (ytPlayer && typeof ytPlayer.stopVideo === 'function') ytPlayer.stopVideo();
     ytBgContainer.hidden = true;
-    messagesWrap.classList.remove('yt-active');
+    body.classList.remove('yt-theater');
     currentVideoId = '';
     currentYtTitle = '';
     ytPaused = false;

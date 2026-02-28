@@ -263,7 +263,7 @@ body.lobby.lobby-theme-snowy-lot {
 .chat-page.theme-fireflies .messages,
 .chat-page.theme-snowy-lot .messages {
   background-color: #0f0f12;
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
@@ -409,18 +409,24 @@ body.lobby.lobby-theme-snowy-lot {
   opacity: 1;
 }
 
+/* Chat column wraps header, messages, and input */
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
 .messages-wrap {
   flex: 1;
   position: relative;
   overflow: hidden;
 }
 
+/* YouTube video container – hidden by default via HTML hidden attr */
 .yt-bg {
-  position: absolute;
-  inset: 0;
   overflow: hidden;
-  z-index: 0;
-  pointer-events: none;
   background: #000;
 }
 
@@ -433,6 +439,35 @@ body.lobby.lobby-theme-snowy-lot {
   border: none;
 }
 
+/* YouTube theater mode – video left ¾, chat right ¼ */
+.chat-page.yt-theater {
+  flex-direction: row;
+}
+
+.chat-page.yt-theater .yt-bg {
+  position: relative;
+  flex: 3;
+}
+
+.chat-page.yt-theater .chat-column {
+  flex: 0 0 25%;
+  max-width: 25%;
+  border-left: 1px solid var(--chat-border);
+}
+
+.chat-page.yt-theater .chat-header {
+  flex-wrap: wrap;
+}
+
+.chat-page.yt-theater .messages {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+.chat-page.yt-theater .messages::before {
+  display: none !important;
+}
+
 .messages {
   position: relative;
   z-index: 1;
@@ -442,15 +477,6 @@ body.lobby.lobby-theme-snowy-lot {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.messages-wrap.yt-active .messages {
-  background: transparent !important;
-  background-image: none !important;
-}
-
-.messages-wrap.yt-active .messages::before {
-  display: none !important;
 }
 
 .msg {
