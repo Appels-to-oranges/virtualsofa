@@ -27,7 +27,7 @@
     });
   });
 
-  const STORAGE_KEYS = { font: 'virtualSofa_fontSize', theme: 'virtualSofa_theme', volume: 'virtualSofa_volume', videoVolume: 'virtualSofa_videoVolume' };
+  const STORAGE_KEYS = { font: 'virtualSofa_fontSize', theme: 'virtualSofa_theme', volume: 'virtualSofa_volume', videoVolume: 'virtualSofa_videoVolume', clearInterval: 'virtualSofa_clearInterval' };
   const body = document.body;
   const IMAGE_THEMES = ['waterfront', 'buildings', 'apartments', 'fireflies', 'snowy-lot'];
 
@@ -113,6 +113,37 @@
     if (fontSizePreview) fontSizePreview.style.fontSize = v + 'px';
   });
 
+  /* ---------- Auto-clear messages ---------- */
+  var clearTimerId = null;
+  var DEFAULT_CLEAR_SECONDS = 300;
+
+  function applyClearInterval(seconds) {
+    if (clearTimerId) { clearInterval(clearTimerId); clearTimerId = null; }
+    document.querySelectorAll('.clear-options .size-opt').forEach(function (el) {
+      el.classList.toggle('active', el.dataset.clear === String(seconds));
+    });
+    localStorage.setItem(STORAGE_KEYS.clearInterval, seconds);
+    if (seconds <= 0) return;
+    clearTimerId = setInterval(function () {
+      var cutoff = Date.now() - (seconds * 1000);
+      messagesEl.querySelectorAll('.msg[data-ts]').forEach(function (msg) {
+        if (parseInt(msg.dataset.ts, 10) < cutoff) msg.remove();
+      });
+    }, 1000);
+  }
+
+  (function initClear() {
+    var saved = parseInt(localStorage.getItem(STORAGE_KEYS.clearInterval), 10);
+    if (isNaN(saved)) saved = DEFAULT_CLEAR_SECONDS;
+    applyClearInterval(saved);
+  })();
+
+  document.querySelectorAll('.clear-options .size-opt').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      applyClearInterval(parseInt(btn.dataset.clear, 10));
+    });
+  });
+
   /* Radio audio (declared early so volume slider can reference it) */
   var radioAudio = new Audio();
   var savedVolume = parseInt(localStorage.getItem(STORAGE_KEYS.volume), 10);
@@ -171,10 +202,32 @@
   const form = document.getElementById('send-form');
   const input = document.getElementById('message-input');
 
-  function nickHue(name) {
-    var h = 0;
-    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
-    return ((h % 360) + 360) % 360;
+  function hexToHsl(hex) {
+    hex = hex.replace(/^#/, '');
+    if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    var r = parseInt(hex.substring(0, 2), 16) / 255;
+    var g = parseInt(hex.substring(2, 4), 16) / 255;
+    var b = parseInt(hex.substring(4, 6), 16) / 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+      else if (max === g) h = ((b - r) / d + 2) / 6;
+      else h = ((r - g) / d + 4) / 6;
+    }
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+  }
+
+  function nickColor(name) {
+    var accent = getComputedStyle(body).getPropertyValue('--chat-accent').trim();
+    var baseHue = accent ? hexToHsl(accent)[0] : 222;
+    var hash = 0;
+    for (var i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) & 0xffffffff;
+    var offset = ((Math.abs(hash) % 61) - 30);
+    var hue = ((baseHue + offset) % 360 + 360) % 360;
+    return 'hsl(' + hue + ', 35%, 25%)';
   }
 
   var MAX_MESSAGES = 300;
@@ -235,12 +288,12 @@
   function appendMessage(type, data) {
     const div = document.createElement('div');
     div.className = 'msg ' + type;
+    div.dataset.ts = Date.now();
     if (type === 'system') {
       div.textContent = data.text;
     } else {
       if (type === 'other' && data.nickname) {
-        var hue = nickHue(data.nickname);
-        div.style.background = 'hsl(' + hue + ', 30%, 28%)';
+        div.style.background = nickColor(data.nickname);
       }
       const sender = document.createElement('div');
       sender.className = 'sender';
