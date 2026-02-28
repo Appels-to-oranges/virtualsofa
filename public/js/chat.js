@@ -566,7 +566,16 @@
                 socket.emit('resume-youtube');
                 updateSyncPos();
               } else if (e.data === YT.PlayerState.PLAYING) {
-                updateSyncPos();
+                var t = e.target.getCurrentTime();
+                if (ytLastSyncTimestamp > 0) {
+                  var elapsed = (Date.now() - ytLastSyncTimestamp) / 1000;
+                  var delta = t - ytLastSyncTime;
+                  if (Math.abs(delta - elapsed) > 5) {
+                    markRemoteAction();
+                    socket.emit('seek-youtube-absolute', t);
+                  }
+                }
+                updateSyncPos(t);
               } else if (e.data === YT.PlayerState.ENDED) {
                 markRemoteAction();
                 e.target.seekTo(0, true);
