@@ -430,6 +430,7 @@
   var ytLastSyncTimestamp = 0;
   var ytSeekPollId = null;
   var ytPauseDebounce = null;
+  var ytLastSeekEmit = 0;
 
   function markRemoteAction() { ytRemoteActionTime = Date.now(); }
   function isRemoteAction() { return (Date.now() - ytRemoteActionTime) < 2000; }
@@ -565,7 +566,7 @@
                   ytPauseDebounce = null;
                   markRemoteAction();
                   socket.emit('pause-youtube');
-                }, 500);
+                }, 800);
               } else if (e.data === YT.PlayerState.PLAYING) {
                 if (ytPauseDebounce) {
                   clearTimeout(ytPauseDebounce);
@@ -577,10 +578,11 @@
                   updateSyncPos();
                 } else {
                   var t = e.target.getCurrentTime();
-                  if (ytLastSyncTimestamp > 0) {
+                  if (ytLastSyncTimestamp > 0 && (Date.now() - ytLastSeekEmit) > 1500) {
                     var elapsed = (Date.now() - ytLastSyncTimestamp) / 1000;
                     var delta = t - ytLastSyncTime;
                     if (Math.abs(delta - elapsed) > 3) {
+                      ytLastSeekEmit = Date.now();
                       markRemoteAction();
                       socket.emit('seek-youtube-absolute', t);
                     }
@@ -607,14 +609,19 @@
       if (!ytPlayer || !currentVideoId || typeof ytPlayer.getCurrentTime !== 'function') return;
       if (isRemoteAction()) { updateSyncPos(); return; }
       var t = ytPlayer.getCurrentTime();
+      if ((Date.now() - ytLastSeekEmit) < 1500) { updateSyncPos(t); return; }
       if (!ytPaused && ytLastSyncTimestamp > 0) {
         var elapsed = (Date.now() - ytLastSyncTimestamp) / 1000;
         var delta = t - ytLastSyncTime;
         if (Math.abs(delta - elapsed) > 5) {
+          if (ytPauseDebounce) { clearTimeout(ytPauseDebounce); ytPauseDebounce = null; }
+          ytLastSeekEmit = Date.now();
           markRemoteAction();
           socket.emit('seek-youtube-absolute', t);
         }
       } else if (ytPaused && Math.abs(t - ytLastSyncTime) > 5) {
+        if (ytPauseDebounce) { clearTimeout(ytPauseDebounce); ytPauseDebounce = null; }
+        ytLastSeekEmit = Date.now();
         markRemoteAction();
         socket.emit('seek-youtube-absolute', t);
       }
